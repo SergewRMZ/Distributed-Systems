@@ -3,7 +3,7 @@ package server;
 public class App {
   public static void main(String[] args) {
     try {
-      Server server = Server.getInstance();
+      MixNode server = new MixNode(8000, "privateKey_Server_A");
       server.init();
     } catch (Exception e) {
       System.out.println(e.getMessage());

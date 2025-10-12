@@ -28,9 +28,8 @@ public class KeyGenerator {
       String pubKeyB64 = Base64.getEncoder().encodeToString(publicKey.getEncoded());
       String privKeyB64 = Base64.getEncoder().encodeToString(privateKey.getEncoded());
 
-      writeKey("publicKey_Server_A", pubKeyB64);
-      writeKey("privateKey_Server_A", privKeyB64);
-
+      writeKey("publicKey_Server_B", pubKeyB64);
+      writeKey("privateKey_Server_B", privKeyB64);
     } catch (Exception e) {
       System.out.println("Error durante la generación de llaves.");
       e.printStackTrace();
