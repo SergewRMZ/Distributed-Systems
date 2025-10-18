@@ -14,8 +14,13 @@ import java.util.Scanner;
 import javax.crypto.Cipher;
 
 public class Client {
-  private static final int SERVER_PORT = 8000;
-  private static final String PUBLIC_KEY_A = "publicKey_Server_A";
+  private static final int SERVER_PORT = 8080;
+
+  public static final String[] public_key_paths = {
+    "publicKey_C", // Clave último Mix
+    "publicKey_B",
+    "publicKey_A"
+  };
 
   public static void main(String[] args) {
     try (
@@ -26,16 +31,17 @@ public class Client {
     ) {
       System.out.println("Conectado al servidor en el puerto " + SERVER_PORT);
 
-      PublicKey publicKey = loadPublicKey(PUBLIC_KEY_A);
+      PublicKey publicKeys[] = loadMixPublicKyes(public_key_paths);
 
       System.out.println("Escribe un mensaje: ");
       String message = scanner.nextLine();
-      byte[] encryptedBytes = encrypt(message, publicKey);
 
-      System.out.println("Mensaje cifrado: " + Base64.getEncoder().encodeToString(encryptedBytes));
-      
-      out.writeInt(encryptedBytes.length);
-      out.write(encryptedBytes);
+      byte[] onionEncryptedMessage = onionEncrypt(message.getBytes(), publicKeys);
+
+      System.out.println("Paquete cifrado. Tamaño: " + onionEncryptedMessage.length + " bytes");
+      System.out.println(new String(onionEncryptedMessage));
+      out.writeInt(onionEncryptedMessage.length);
+      out.write(onionEncryptedMessage);
       out.flush();
       System.out.println("Paquete cifrado enviado al servidor.");
 
@@ -47,20 +53,35 @@ public class Client {
     }
   }
 
+  // Método para cargar múltiples llaves públicas
+  public static PublicKey[] loadMixPublicKyes(String [] filenames) throws Exception {
+    PublicKey[] keys = new PublicKey[filenames.length];
+    for (int i = 0; i < filenames.length; i++) {
+      keys[i] = loadPublicKey(filenames[i]);
+    }
+    return keys;
+  }
+
+  public static byte[] onionEncrypt(byte[] data, PublicKey[] publicKeys) throws Exception {
+    byte[] currentPacket = data;
+    for (PublicKey key : publicKeys) {
+      currentPacket = encrypt(currentPacket, key);
+    }
+    return currentPacket;
+  }
+
   public static PublicKey loadPublicKey(String filename) throws Exception {
     String base64Key = new String(Files.readAllBytes(Paths.get(filename)));
     byte[] encoded = Base64.getDecoder().decode(base64Key.trim());
-
     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
     X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encoded);
     return keyFactory.generatePublic(keySpec);
   }
 
-  public static byte[] encrypt(String data, PublicKey publicKey) throws Exception {
-    byte[] dataBytes = data.getBytes();
+  public static byte[] encrypt(byte[] data, PublicKey publicKey) throws Exception {
     Cipher cipher = javax.crypto.Cipher.getInstance("RSA");
     cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-    byte[] encryptedBytes = cipher.doFinal(dataBytes);
+    byte[] encryptedBytes = cipher.doFinal(data);
     return encryptedBytes;
   }
 }

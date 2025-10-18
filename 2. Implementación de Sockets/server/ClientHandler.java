@@ -32,8 +32,8 @@ public class ClientHandler implements Runnable {
         byte[] decryptedData = CryptoUtils.decrypt(encryptPacket, this.privateKey);
 
         messageQueue.put(decryptedData);
-        System.out.println("Mensaje recibido y añadido a la cola.");
-        out.writeUTF("Mensaje recibido correctamente.");;
+        System.out.println("Mensaje recibido y descifrado: " + new String(decryptedData));
+        out.writeUTF("El paquete de datos se ha recibido y descifrado correctamente.");
       }
     } catch (Exception e) {
       System.err.println("Ha ocurrido un error en el ClientHandler: " + e.getMessage());

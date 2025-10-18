@@ -12,10 +12,15 @@ public class MixNode {
   private ServerSocket serverSocket;
   private BlockingQueue<byte[]> messageQueue;
   private PrivateKey privateKey;
-  public MixNode (int port, String privateKeyPath) {
+  private final int nextMixPort;
+  private final String nextMixHost;
+  public MixNode (int port, String privateKeyPath, String nextMixHost, int nextMixPort) {
+    this.port = port;
+    this.messageQueue = new LinkedBlockingQueue<>(LOTE_SIZE);
+    this.nextMixHost = nextMixHost;
+    this.nextMixPort = nextMixPort;
+
     try {
-      this.port = port;
-      this.messageQueue = new LinkedBlockingQueue<>(LOTE_SIZE);
       this.privateKey = CryptoUtils.loadPrivateKey(privateKeyPath);
     } catch (Exception e) {
       System.out.println("Error al iniciar el servidor: " + e.getMessage());
@@ -31,7 +36,7 @@ public class MixNode {
       return;
     }
 
-    Thread mixerThread = new Thread(new Mixer(messageQueue, LOTE_SIZE));
+    Thread mixerThread = new Thread(new Mixer(messageQueue, LOTE_SIZE, nextMixHost, nextMixPort));
     mixerThread.start();
 
     while(true) {
