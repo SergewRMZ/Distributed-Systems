@@ -8,7 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class MixNode {
   public int port;
-  private static final int LOTE_SIZE = 5;
+  private static final int LOTE_SIZE = 3;
   private ServerSocket serverSocket;
   private BlockingQueue<byte[]> messageQueue;
   private PrivateKey privateKey;

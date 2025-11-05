@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.security.PrivateKey;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.concurrent.BlockingQueue;
 
 import javax.crypto.SecretKey;
@@ -15,6 +16,7 @@ public class ClientHandler implements Runnable {
   private final Socket socket;
   private final BlockingQueue<byte[]> messageQueue;
   private final PrivateKey privateKey;
+  private final int RSA_KEY_SIZE = 256;
 
   public ClientHandler(Socket socket, BlockingQueue<byte[]> messageQueue, PrivateKey privateKey) {
     this.socket = socket;  
@@ -29,19 +31,32 @@ public class ClientHandler implements Runnable {
       DataInputStream in = new DataInputStream(socket.getInputStream());
       DataOutputStream out = new DataOutputStream(socket.getOutputStream());
     ) {
-      int length = in.readInt();
-      if(length > 0) {
-        byte[] encryptPacket = new byte[length];
-        in.readFully(encryptPacket, 0, encryptPacket.length);
+      while(true) {
+        try {
+          int length = in.readInt();
+          if(length > 0) {
+            byte[] encryptPacket = new byte[length];
+            in.readFully(encryptPacket, 0, encryptPacket.length);
 
-        ByteBuffer buf = ByteBuffer.wrap(encryptPacket);
+            ByteBuffer buf = ByteBuffer.wrap(encryptPacket);
 
-        byte[] decryptedData = removeLayer(buf, this.privateKey);
+            byte[] decryptedData = removeLayer(buf, this.privateKey);
 
-        messageQueue.put(decryptedData);
-        System.out.println("Mensaje recibido y descifrado: " + new String(decryptedData));
-        out.writeUTF("El paquete de datos se ha recibido y descifrado correctamente.");
+            ByteBuffer bufferCheck = ByteBuffer.wrap(decryptedData);
+            if (bufferCheck.getInt() == RSA_KEY_SIZE) {
+              System.out.println("Mensaje recibido y descifrado: " + Base64.getEncoder().encodeToString(decryptedData));
+              messageQueue.put(decryptedData);
+            } else {
+              System.out.println("Última capa de cifrado eliminada");
+              System.out.println("Mensaje final: " + new String(decryptedData, "UTF-8"));
+            }
+          }
+        } catch (Exception e) {
+          System.out.println("Fin del lote: Se han recibido todos los mensajes");
+          break;
+        }
       }
+      out.writeUTF("Lote de datos reibicido y procesado correctamente.");
     } catch (Exception e) {
       System.err.println("Ha ocurrido un error en el ClientHandler: " + e.getMessage());
     }

@@ -10,9 +10,9 @@ public class Client {
   private static final int SERVER_PORT = 8081;
 
   public static final String[] public_key_paths = {
-    "publicKey_C", // Clave último Mix
+    "publicKey_A", // Clave último Mix
     "publicKey_B",
-    "publicKey_A"
+    "publicKey_C"
   };
 
   public static void main(String[] args) {
@@ -36,8 +36,7 @@ public class Client {
       out.flush();
       System.out.println("Paquete cifrado enviado al servidor.");
 
-      String response = in.readUTF();
-      System.out.println("Respuesta del servidor: " + response);
+      out.close();
     } catch (Exception e) {
       System.out.println("Error en el cliente: " + e.getMessage());
       e.printStackTrace();
