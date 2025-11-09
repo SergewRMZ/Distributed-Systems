@@ -2,12 +2,16 @@ import express, { Router } from "express";
 import path from "path";
 import cors from "cors";
 import fileUpload from "express-fileupload";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 
 interface Options {
   port: number;
   routes: Router;
   public_path?: string;
 }
+
+const __dirname = dirname( fileURLToPath( import.meta.url ) );
 
 export class Server {
   public readonly app = express();

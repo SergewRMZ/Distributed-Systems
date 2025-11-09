@@ -3,13 +3,13 @@ import { AppRoutes } from './routes.js';
 import { envs } from './config/envs.js';
 
 (async () => {
-  await main();
+  main();
 })();
+
 async function main () {
   const server = new Server({
     port: envs.PORT,
     routes: AppRoutes.routes,
   });
-
-  await server.start();
+  server.start();
 }

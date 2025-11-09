@@ -5,7 +5,7 @@ import { FileUploadService } from '../services/file-upload.service.js';
 
 export class FileUploadController {
   constructor(
-    private readonly fileUploadService = new FileUploadService()
+    private readonly fileUploadService: FileUploadService
   ) {}
 
   private handleError( error: unknown, res: Response ) {
@@ -23,6 +23,13 @@ export class FileUploadController {
 
     this.fileUploadService.uploadSingle( file, `uploads/${type}` )
       .then(uploaded => res.json( uploaded ))
+      .catch( error => this.handleError( error, res ) 
+    );
+  }
+
+  public getFiles = (req: Request, res: Response) => {
+    this.fileUploadService.getFiles( `uploads/users` )
+      .then( files => res.json( files ) )
       .catch( error => this.handleError( error, res ) 
     );
   }
