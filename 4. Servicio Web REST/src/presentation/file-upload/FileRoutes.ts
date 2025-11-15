@@ -20,6 +20,10 @@ export class FileUploadRoutes {
     router.get('/:type', 
       controller.getFiles);
     
+    router.get('/:type/:id', 
+      controller.getFile);
+
+    router.delete('/:type/:id', controller.deleteFile)
     return router;
   }
 }

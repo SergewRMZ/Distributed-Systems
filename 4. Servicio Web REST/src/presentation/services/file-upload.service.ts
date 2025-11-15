@@ -27,14 +27,34 @@ export class FileUploadService {
 
     return allFiles.map(file => ({
       ...file,
-      downloadUrl: `${envs.WEBSERVICE_URL}/api/files/download/${file.uuidFileName}`
+      downloadUrl: `${envs.WEBSERVICE_URL}/api/files/users/${file.uuidFileName}`
     }));
   } 
+
+  public async deleteFile (type: string, uuidFileName: string) {
+    try {
+      const existFile = await this.fileRepository.getFileByUuid( uuidFileName );
+      if(!existFile) {
+        throw CustomError.notFound('Archivo no encontrado en la base de datos');
+      }
+
+      const filePath = path.resolve(__dirname, `../../../uploads/${type}/${uuidFileName}`);
+
+      await this.fileRepository.deleteFile( uuidFileName );
+      if(!fs.existsSync(filePath)) {
+        throw CustomError.notFound('Archivo no encontrado en el sistema de archivos');
+      }
+
+      fs.unlinkSync(filePath);
+    } catch (error) {
+      throw error;
+    }
+  }
 
   public async uploadSingle(
     file: UploadedFile,
     folder: string = 'uploads',
-    validExtensions: string[] = ['png','gif', 'jpg','jpeg']
+    validExtensions: string[] = ['png','gif', 'jpg','jpeg', 'pdf']
   ) {
 
     try {

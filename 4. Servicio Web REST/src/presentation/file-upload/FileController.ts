@@ -2,6 +2,12 @@ import type { Response, Request } from 'express';
 import type { UploadedFile } from 'express-fileupload';
 import { CustomError } from '../../domain/errors/CustomError.js';
 import { FileUploadService } from '../services/file-upload.service.js';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import path from 'path';
+import fs from 'fs';
+
+const __dirname = dirname( fileURLToPath( import.meta.url ) );
 
 export class FileUploadController {
   constructor(
@@ -30,6 +36,24 @@ export class FileUploadController {
   public getFiles = (req: Request, res: Response) => {
     this.fileUploadService.getFiles( `uploads/users` )
       .then( files => res.json( files ) )
+      .catch( error => this.handleError( error, res ) 
+    );
+  }
+
+  public getFile = (req: Request, res: Response) => {
+    const { type, id } = req.params;
+    const filePath = path.resolve(__dirname, `../../../uploads/${type}/${id}`);
+    if(!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Archivo no encontrado' });
+    }
+
+    return res.sendFile(filePath);
+  }
+
+  public deleteFile = (req: Request, res: Response) => {
+    const { type, id } = req.params;
+    this.fileUploadService.deleteFile( type!, id! )
+      .then( () => res.json( { message: 'Archivo eliminado correctamente' } ) )
       .catch( error => this.handleError( error, res ) 
     );
   }

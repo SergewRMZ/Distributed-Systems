@@ -17,4 +17,24 @@ export class FileRepository {
   async getAllFiles(): Promise <File[]> {
     return await this.prisma.file.findMany();
   }
+
+  async getFileByUuid(uuidFileName: string): Promise < File | null> {
+    return await this.prisma.file.findUnique({
+      where: {
+        uuidFileName
+      }
+    })
+  }
+
+  async deleteFile(uuidFileName: string): Promise <void> {
+    try {
+      await this.prisma.file.delete({
+        where: {
+          uuidFileName
+        }
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
 }
