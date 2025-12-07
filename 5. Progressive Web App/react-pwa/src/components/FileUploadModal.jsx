@@ -46,7 +46,7 @@ function FileUploadModal(props) {
       <DialogContent>
         <Box>
           <input
-            accept="*"
+            accept=".png, .gif, .jpg, .jpeg, .pdf"
             style={{ display: 'none' }}
             id="raised-button-file"
             type="file"
