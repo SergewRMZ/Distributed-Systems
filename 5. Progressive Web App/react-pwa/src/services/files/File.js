@@ -1,6 +1,11 @@
 import api from '../api';
 
 const FileService = (() => {
+  const deleteFile = async (uuid) => {
+    const response = await api.delete(`/files/users/${uuid}`);
+    return response.data;
+  }
+
   const getFiles = async () => {
     try {
       const response = await api.get(`/files/users`);
@@ -29,7 +34,8 @@ const FileService = (() => {
 
   return {
     getFiles,
-    uploadFile
+    uploadFile,
+    deleteFile
   }
 })();
 

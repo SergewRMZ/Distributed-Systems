@@ -15,10 +15,15 @@ import {
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import FileService from "../services/files/File";
 import { Delete } from "@mui/icons-material";
+import ConfirmationModal from "./ConfirmationModal";
 
-export default function ArchivosView() {
-  const [archivos, setArchivos] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function ArchivosView(props) {
+  const { refreshTrigger, onRefreshFiles } = props;
+
+  const [ isConfirmationOpen, setIsConfirmationOpen ] = useState(false);
+  const [ fileToDelete, setFileToDelete ] = useState(null);
+  const [ archivos, setArchivos ] = useState([]);
+  const [ loading, setLoading ] = useState(true);
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -41,7 +46,7 @@ export default function ArchivosView() {
     };
 
     fetchFiles();
-  }, []);
+  }, [refreshTrigger]);
 
   const handleOpenFile = (url) => {
     if (url) {
@@ -51,8 +56,25 @@ export default function ArchivosView() {
     }
   };
 
-  const handleDeleteFile = async (uuid) => {
-    console.log("Eliminar archivo con UUID:", uuid);
+  // Método que activa el modal de confirmación
+  const handleRequestDelete = (uuid) => {
+    setFileToDelete(uuid);
+    setIsConfirmationOpen(true);
+  };
+
+  // Método que cierra el modal de confirmación
+  const handleCloseModal = () => {
+    setIsConfirmationOpen(false);
+    setFileToDelete(null);
+  };
+
+  // Método que se ejecuta al confirmar la eliminación
+  const handleConfirmDelete = async () => {
+    if(!fileToDelete) return;
+    await FileService.deleteFile(fileToDelete);
+    onRefreshFiles();
+    setIsConfirmationOpen(false);
+    setFileToDelete(null);
   }
 
   if (loading) {
@@ -100,7 +122,7 @@ export default function ArchivosView() {
             </Typography>
           </Grid>
 
-          <Grid size={1}/> Hola
+          <Grid size={1}/>
         </Grid>
       </Box>
 
@@ -189,8 +211,7 @@ export default function ArchivosView() {
                       size="small"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteFile(archivo.uuid);
-                        console.log("Eliminar archivo:", archivo.uuid);
+                        handleRequestDelete(archivo.uuid);
                       }}
 
                       sx={{
@@ -211,6 +232,12 @@ export default function ArchivosView() {
           </React.Fragment>
         ))}
       </List>
+
+      <ConfirmationModal
+        openModal={isConfirmationOpen}
+        onCloseModal={handleCloseModal}
+        onConfirm={handleConfirmDelete}  
+      />
     </Box>
   );
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import FileService from "../services/files/File";
 
 function FileUploadModal(props) {
-  const { open, onClose, onUploadSuccess } = props;
+  const { open, onClose, onRefreshFiles } = props;
   const [ selectedFile, setSelectedFile ] = useState(null);
   const [ error, setError ] = useState(null);
   const [ loading, setLoading ] = useState(false); 
@@ -25,7 +25,7 @@ function FileUploadModal(props) {
       await FileService.uploadFile(selectedFile);
       setLoading(false);
       setSelectedFile(null);
-      onUploadSuccess();
+      onRefreshFiles();
       onClose();
     } catch (error) {
       console.log(error);

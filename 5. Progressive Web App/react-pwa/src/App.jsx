@@ -54,14 +54,16 @@ function App() {
         >
           Mis Archivos
         </Typography>
-        <ArchivosView key={refreshFiles}/>
+        <ArchivosView 
+          refreshTrigger={refreshFiles}
+          onRefreshFiles={handleUploadSuccess}/>
         
       </Box>
 
       <FileUploadModal
         open={isModalOpen}
         onClose={handleCloseModal}
-        onUploadSuccess={handleUploadSuccess}
+        onRefreshFiles={handleUploadSuccess}
         />
     </Box>
   );
