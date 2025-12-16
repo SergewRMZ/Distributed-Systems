@@ -1,6 +1,6 @@
-import { Server } from './server.js';
-import { AppRoutes } from './routes.js';
-import { envs } from './config/envs.js';
+import { Server } from "./server.js";
+import { AppRoutes } from "./routes.js";
+import { envs } from "./config/envs.js";
 
 (async () => {
   main();
@@ -11,6 +11,5 @@ async function main () {
     port: envs.PORT,
     routes: AppRoutes.routes,
   });
-  
   server.start();
 }
