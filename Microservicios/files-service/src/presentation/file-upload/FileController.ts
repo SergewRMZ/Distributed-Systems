@@ -26,28 +26,38 @@ export class FileUploadController {
   public uploadFile = (req: Request, res: Response) => {
     const type = req.params.type;
     const file = req.body.files[0] as UploadedFile;
+    const userId = req.body.user.id;
 
-    this.fileUploadService.uploadSingle( file, `uploads/${type}` )
+    this.fileUploadService.uploadSingle( file, userId, `uploads/${type}` )
       .then(uploaded => res.json( uploaded ))
       .catch( error => this.handleError( error, res ) 
     );
   }
 
   public getFiles = (req: Request, res: Response) => {
-    this.fileUploadService.getFiles( `uploads/users` )
+    const userId = req.body.user.id;
+
+    this.fileUploadService.getFilesByUserId( `uploads/users`, userId)
       .then( files => res.json( files ) )
       .catch( error => this.handleError( error, res ) 
     );
   }
 
-  public getFile = (req: Request, res: Response) => {
+  public getFile = async (req: Request, res: Response) => {
     const { type, id } = req.params;
-    const filePath = path.resolve(__dirname, `../../../uploads/${type}/${id}`);
-    if(!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'Archivo no encontrado' });
-    }
+    const userId = req.body.user.id;
 
-    return res.sendFile(filePath);
+    try {
+      const file = await this.fileUploadService.validateFile(id!, userId);
+
+      const filePath = path.resolve(__dirname, `../../../uploads/${type}/${id}`);
+      if(!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Archivo no encontrado' });
+      }
+      return res.sendFile(filePath);
+    } catch (error) {
+      return this.handleError(error, res);
+    }
   }
 
   public deleteFile = (req: Request, res: Response) => {

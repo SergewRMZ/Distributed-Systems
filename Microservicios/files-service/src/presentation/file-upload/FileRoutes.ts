@@ -4,6 +4,7 @@ import { FileUploadService } from "../services/file-upload.service.js";
 import { FileUploadMiddleware } from "../middleware/file-upload.middleware.js";
 import { TypeMiddleware } from "../middleware/type.middleware.js";
 import { FileRepository } from "../../domain/repository/FileRepository.js";
+import { AuthMiddleware } from "../middleware/auth.middleware.js";
 
 export class FileUploadRoutes {
   static get routes(): Router {
@@ -13,17 +14,22 @@ export class FileUploadRoutes {
     const controller = new FileUploadController(service);
 
     router.post(`/upload/:type`, 
+      AuthMiddleware.validateJWT,
       FileUploadMiddleware.containFiles, 
       TypeMiddleware.validTypes(['users']), 
       controller.uploadFile);
 
     router.get('/:type', 
+      AuthMiddleware.validateJWT,
       controller.getFiles);
     
     router.get('/:type/:id', 
+      AuthMiddleware.validateJWT,
       controller.getFile);
 
-    router.delete('/:type/:id', controller.deleteFile)
+    router.delete('/:type/:id', 
+      AuthMiddleware.validateJWT,
+      controller.deleteFile)
     return router;
   }
 }

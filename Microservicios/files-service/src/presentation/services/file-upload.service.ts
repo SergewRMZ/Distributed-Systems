@@ -22,14 +22,20 @@ export class FileUploadService {
     }
   }
 
-  public async getFiles (folder: string) {
-    const allFiles = await this.fileRepository.getAllFiles();
+  public async getFilesByUserId (folder: string, userId: string) {
+    const allFiles = await this.fileRepository.getFilesByUserId(userId);
 
     return allFiles.map(file => ({
       ...file,
       downloadUrl: `${envs.WEBSERVICE_URL}/api/files/users/${file.uuidFileName}`
     }));
   } 
+
+  public async validateFile (uuidFileName: string, userId: string) {
+    const fileValidated = await this.fileRepository.getFileByUuidAndUserId(uuidFileName, userId);
+    if(!fileValidated) throw CustomError.badRequest('Archivo no encontrado');
+    return fileValidated;
+  }
 
   public async deleteFile (type: string, uuidFileName: string) {
     try {
@@ -53,6 +59,7 @@ export class FileUploadService {
 
   public async uploadSingle(
     file: UploadedFile,
+    userId: string, 
     folder: string = 'uploads',
     validExtensions: string[] = ['png','gif', 'jpg','jpeg', 'pdf']
   ) {
@@ -72,7 +79,7 @@ export class FileUploadService {
       const originalName = Buffer.from(file.name, 'latin1').toString('utf8');
 
       // Registrando en la base de datos
-      await this.fileRepository.createFile( fileName, originalName, file.size );
+      await this.fileRepository.createFile( fileName, userId, originalName, file.size );
       return { fileName };
     } catch (error) {
       throw error;

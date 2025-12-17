@@ -2,6 +2,7 @@ import { CreateUserDto } from "../../domain/dto/CreateUser.dto.js";
 import { CustomError } from "../../domain/errors/CustomError.js";
 import type { Request, Response } from "express";
 import type { AuthService } from "../services/auth.service.js";
+import { LoginUserDto } from "../../domain/dto/LoginUser.dto.js";
 
 export class AuthController {
   constructor(
@@ -22,6 +23,15 @@ export class AuthController {
 
     this.authService.createUser( createUserDto! )
       .then((response) => res.json(response))
+      .catch( error => this.handleError(error, res));
+  }
+
+  public loginUser = (req: Request, res: Response) => {
+    const [ error, loginUserDto ] = LoginUserDto.create(req.body);
+    if(error) return res.status(400).json({ error });
+
+    this.authService.login(loginUserDto!)
+      .then( response => res.json(response))
       .catch( error => this.handleError(error, res));
   }
 }
